@@ -70,6 +70,7 @@ class PPO:
 
 
             for episode_timestep in range(self.max_timesteps_per_episode):
+                print(episode_timestep)
                 t += 1
 
                 batch_obs1.append(obs1)
@@ -133,7 +134,7 @@ class PPO:
             discounted_reward = 0
             for rew in reversed(ep_rews):
                 discounted_reward = rew + discounted_reward * self.gamma
-                batch_retgs.insert(0, discounted_reward)
+                batch_rtgs.insert(0, discounted_reward)
         batch_rtgs = torch.tensor(batch_rtgs, dtype=torch.float)
         return batch_rtgs
 
@@ -158,6 +159,7 @@ class PPO:
 
         current_step = 0
         while current_step < total_timesteps: #Algorithm Step 2
+            print(current_step)
             rollout1, rollout2 = self.rollout()
             batch_obs1, batch_acts1, batch_log_probs1, batch_rtgs1, batch_lens1 = rollout1
             batch_obs2, batch_acts2, batch_log_probs2, batch_rtgs2, batch_lens2 = rollout2
@@ -187,8 +189,8 @@ class PPO:
                 actor_loss1 = (-torch.min(surr1_1,surr2_1)).mean()
                 actor_loss2 = (-torch.min(surr1_2,surr2_2)).mean()
 
-                critic_loss1 = nn.MSELoss()(V1, batch_rtgs1)
-                critic_loss2 = nn.MSELoss()(V2, batch_rtgs2)
+                critic_loss1 = torch.nn.MSELoss()(V1, batch_rtgs1)
+                critic_loss2 = torch.nn.MSELoss()(V2, batch_rtgs2)
 
                 self.actor_optim1.zero_grad()
                 self.actor_optim2.zero_grad()
